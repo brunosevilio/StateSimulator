@@ -1,4 +1,4 @@
-# StateSimulator BSPBR
+# StateSimulator BSP
 
 This state simulation is an integrated system that models the functioning of a fictional state.
 Ideal for strategy games, the goal is to provide a comprehensive and realistic platform for simulating the administration of a fictional state, exploring the interactions between population, economy e armed forces.
