@@ -13,7 +13,7 @@ Simulates production and economic chains, organizing sectors from extraction to 
 
 Models armed forces, creating detailed hierarchies ranging from forces and armies to brigades and regiments. Uses geospatial data to position military units on maps, visually representing them.
 
-3 - Citizen Generation System - Functional but Requires Optimization
+3 - Citizen Generator- Functional but Requires Optimization
 
 This system is an automated and modular platform to generate fictional populations. It combines real data on age distribution and Brazilian municipalities to create fictional data for names, personal attributes, and identification numbers in a database.
 
