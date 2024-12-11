@@ -1,6 +1,6 @@
-# StateSimulator
+# StateSimulator BSPBR
 
-This state simulation platform is an integrated system that models the functioning of a fictional state.
+This state simulation is an integrated system that models the functioning of a fictional state.
 
 1 - Economic Simulator - Functional, in Testing and Balancing Phase
 
