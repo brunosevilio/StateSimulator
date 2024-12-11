@@ -1,5 +1,7 @@
 # StateSimulator BSP
 
+Introduction
+
 This state simulation is an integrated system that models the functioning of a fictional state.
 Ideal for strategy games, the goal is to provide a comprehensive and realistic platform for simulating the administration of a fictional state, exploring the interactions between population, economy, politics and armed forces.
 
@@ -17,7 +19,9 @@ Models armed forces, creating detailed hierarchies ranging from forces and armie
 
 This system is an automated and modular platform to generate fictional populations. It combines real data on age distribution and Brazilian municipalities to create fictional data for names, personal attributes, and identification numbers in a database.
 
---------------------------------------------------------------------------------------------
+_______________________________________________________________________
+
+Introdução
 
 Esta plataforma de simulação estatal é um sistema integrado que modela o funcionamento de um
 estado fictício.
@@ -42,3 +46,5 @@ O sistema é uma plataforma automatizada e modular para gerar populações
 fictícias. Ele combina dados reais de faixa etária e municípios brasileiros, para gerar dados
 fictícios de nomes, atributos pessoais e números de identidade em um banco de
 dados.
+
+---------------------------------------------------------------------------------
