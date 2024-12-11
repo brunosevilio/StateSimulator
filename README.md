@@ -4,7 +4,7 @@ This state simulation platform is an integrated system that models the functioni
 
 1 - Economic Simulator - Functional, in Testing and Balancing Phase
 
-Simulates production and economic chains, organizing sectors from extraction to manufacturing of consumer goods. Generates data on production, consumption, demand, inputs, and raw materials.
+Simulates production and economic chains, organizing sectors from extraction to manufacturing of goods. Generates data on production, consumption, demand and raw materials.
 
 2 - Military Units Hierarchy and Mapping System - Functional and Optimized
 
