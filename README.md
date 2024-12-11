@@ -1,7 +1,9 @@
 # StateSimulator BSP
 
 This state simulation is an integrated system that models the functioning of a fictional state.
-Ideal for strategy games, the goal is to provide a comprehensive and realistic platform for simulating the administration of a fictional state, exploring the interactions between population, economy e armed forces.
+Ideal for strategy games, the goal is to provide a comprehensive and realistic platform for simulating the administration of a fictional state, exploring the interactions between population, economy, politics and armed forces.
+
+Sistems already developed:
 
 1 - Economic Simulator - Functional, in Testing and Balancing Phase
 
@@ -19,8 +21,10 @@ This system is an automated and modular platform to generate fictional populatio
 
 Esta plataforma de simulação estatal é um sistema integrado que modela o funcionamento de um
 estado fictício.
-Ideal para jogos de estratégia o objetivo é fornecer uma plataforma completa e realista para simular a administração de um
-estado fictício, explorando as interações entre população, economia, forças armadas.
+Ideal para jogos de estratégia, o objetivo é fornecer uma plataforma completa e realista para simular a administração de um
+estado fictício, explorando as interações entre população, economia e forças armadas.
+
+Sistemas já desenvolvidos:
 
 1. Simulador Econômico - Status Funcional, em fase de testes e balanceamento
 
