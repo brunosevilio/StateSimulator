@@ -8,13 +8,14 @@ import math
 # ==========================================
 class Unidade:
     """Base class to represent a hierarchical unit."""
-    def __init__(self, nome, nivel, id_unico, lat=None, lon=None, imagem=None):
+    def __init__(self, nome, nivel, id_unico, lat=None, lon=None, imagem=None, cargo_comando=None):
         self.nome = nome
         self.nivel = nivel
         self.id_unico = id_unico
         self.lat = lat
         self.lon = lon
         self.imagem = imagem  # Link to the image
+        self.cargo_comando = cargo_comando  # Command role for the unit
         self.subordinados = []
 
     def adicionar_subordinado(self, unidade):
@@ -33,31 +34,31 @@ class Unidade:
 # ==========================================
 class Forca(Unidade):
     """Represents a force (top level)."""
-    def __init__(self, nome, id_unico):
-        super().__init__(nome, "Força", id_unico)
+    def __init__(self, nome, id_unico, cargo_comando=None):
+        super().__init__(nome, "Força", id_unico, cargo_comando=cargo_comando)
 
 class Exercito(Unidade):
     """Represents an army."""
-    def __init__(self, nome, id_unico, coord=None, imagem=None):
-        super().__init__(nome, "Exército", id_unico, imagem=imagem)
+    def __init__(self, nome, id_unico, coord=None, imagem=None, cargo_comando=None):
+        super().__init__(nome, "Exército", id_unico, imagem=imagem, cargo_comando=cargo_comando)
         if coord:
             self.lat = coord.get('lat')
             self.lon = coord.get('lon')
 
 class Divisao(Unidade):
     """Represents a division."""
-    def __init__(self, nome, id_unico, imagem=None):
-        super().__init__(nome, "Divisão", id_unico, imagem=imagem)
+    def __init__(self, nome, id_unico, imagem=None, cargo_comando=None):
+        super().__init__(nome, "Divisão", id_unico, imagem=imagem, cargo_comando=cargo_comando)
 
 class Brigada(Unidade):
     """Represents a brigade."""
-    def __init__(self, nome, id_unico, imagem=None):
-        super().__init__(nome, "Brigada", id_unico, imagem=imagem)
+    def __init__(self, nome, id_unico, imagem=None, cargo_comando=None):
+        super().__init__(nome, "Brigada", id_unico, imagem=imagem, cargo_comando=cargo_comando)
 
 class Regimento(Unidade):
     """Represents a regiment."""
-    def __init__(self, nome, id_unico, imagem=None):
-        super().__init__(nome, "Regimento", id_unico, imagem=imagem)
+    def __init__(self, nome, id_unico, imagem=None, cargo_comando=None):
+        super().__init__(nome, "Regimento", id_unico, imagem=imagem, cargo_comando=cargo_comando)
 
 # ==========================================
 # Utility function to generate circular coordinates
@@ -121,13 +122,15 @@ def processar_hierarquia(df_ativas, cidades_df):
         # Add army
         exercito = next((e for e in forcas[forca_nome].subordinados if e.nome == exercito_nome), None)
         if not exercito:
-            exercito = Exercito(exercito_nome, id_unico=len(forcas[forca_nome].subordinados) + 1, coord=coords_ex, imagem=ex_imagem)
+            cargo_comando = f"{row['Cargo_Exercito']} {exercito_nome}" if 'Cargo_Exercito' in row else None
+            exercito = Exercito(exercito_nome, id_unico=len(forcas[forca_nome].subordinados) + 1, coord=coords_ex, imagem=ex_imagem, cargo_comando=cargo_comando)
             forcas[forca_nome].adicionar_subordinado(exercito)
 
         # Add division
         divisao = next((d for d in exercito.subordinados if d.nome == divisao_nome), None)
         if not divisao:
-            divisao = Divisao(divisao_nome, id_unico=len(exercito.subordinados) + 1, imagem=div_imagem)
+            cargo_comando = f"{row['Cargo_Divizao']} {divisao_nome}" if 'Cargo_Divizao' in row else None
+            divisao = Divisao(divisao_nome, id_unico=len(exercito.subordinados) + 1, imagem=div_imagem, cargo_comando=cargo_comando)
             if coords_div:
                 divisao.lat, divisao.lon = coords_div['lat'], coords_div['lon']
             else:
@@ -137,7 +140,8 @@ def processar_hierarquia(df_ativas, cidades_df):
         # Add brigade
         brigada = next((b for b in divisao.subordinados if b.nome == brigada_nome), None)
         if not brigada:
-            brigada = Brigada(brigada_nome, id_unico=len(divisao.subordinados) + 1, imagem=bri_imagem)
+            cargo_comando = f"{row['Cargo_Brigada']} {brigada_nome}" if 'Cargo_Brigada' in row else None
+            brigada = Brigada(brigada_nome, id_unico=len(divisao.subordinados) + 1, imagem=bri_imagem, cargo_comando=cargo_comando)
             if coords_brig:
                 brigada.lat, brigada.lon = coords_brig['lat'], coords_brig['lon']
             else:
@@ -171,20 +175,21 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
             subordinados = [sub.nome for sub in unidade.subordinados]
 
             description = (
-                f"Unit: {unidade.nome}\n"
-                f"Level: {unidade.nivel}\n"
-                f"ID: {unidade.id_unico}\n"
-                f"Superior Units: {' > '.join(hierarquia_superior) if hierarquia_superior else 'None'}\n"
+                f"<b>Unit:</b> {unidade.nome}<br>"
+                f"<b>ID:</b> {unidade.id_unico}<br>"
+                f"<b>Comandante:</b> {unidade.cargo_comando if unidade.cargo_comando else 'None'}<br>"
+                f"<b>Superior Units:</b><br>{' > '.join(hierarquia_superior) if hierarquia_superior else 'None'}<br>"
             )
 
             if subordinados:
-                description += "Subordinate Units:\n" + "\n".join(subordinados) + "\n"
+                description += "<b>Subordinate Units:</b><br>" + "<br>".join(subordinados) + "<br>"
             else:
-                description += "Subordinate Units: None\n"
+                description += "<b>Subordinate Units:</b> Batalhão<br>"
 
             if unidade.imagem:
                 caminho_completo = f"Main/military_sistem/{unidade.imagem}"
                 description += f"<br><img src='{caminho_completo}' width='200'/>"
+
                 ponto.style.iconstyle.icon.href = caminho_completo
                 ponto.style.iconstyle.scale = 1.0
             ponto.description = description
