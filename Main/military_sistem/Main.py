@@ -113,9 +113,9 @@ def processar_hierarquia(df_ativas, cidades_df):
         coords_div = buscar_coordenadas(row.get('Cidade_Div'))  # Cidade da Divisão
         coords_brig = buscar_coordenadas(row.get('Cidade_Brig'))  # Cidade da Brigada
 
-        print(f"[DEBUGC] Exército '{exercito_nome}' - Cidade: {row.get('Cidade')}, Coordenadas: {coords_ex}")
-        print(f"[DEBUGC] Divisão '{divisao_nome}' - Cidade: {row.get('Cidade_Div')}, Coordenadas: {coords_div}")
-        print(f"[DEBUGC] Brigada '{brigada_nome}' - Cidade: {row.get('Cidade_Brig')}, Coordenadas: {coords_brig}")
+        #print(f"[DEBUGC] Exército '{exercito_nome}' - Cidade: {row.get('Cidade')}, Coordenadas: {coords_ex}")
+        #print(f"[DEBUGC] Divisão '{divisao_nome}' - Cidade: {row.get('Cidade_Div')}, Coordenadas: {coords_div}")
+        #print(f"[DEBUGC] Brigada '{brigada_nome}' - Cidade: {row.get('Cidade_Brig')}, Coordenadas: {coords_brig}")
 
         ex_imagem = row.get('Exe_PNG')
         div_imagem = row.get('Div_PNG')
@@ -147,7 +147,7 @@ def processar_hierarquia(df_ativas, cidades_df):
                 divisao.lat, divisao.lon = exercito.lat, exercito.lon  # Caso contrário, herda do exército
             
             exercito.adicionar_subordinado(divisao)
-            print(f"[DEBUGB] Divisão '{divisao.nome}' - Coordenadas finais atribuídas: ({divisao.lat}, {divisao.lon})")
+            #print(f"[DEBUGB] Divisão '{divisao.nome}' - Coordenadas finais atribuídas: ({divisao.lat}, {divisao.lon})")
 
         # Adiciona a brigada
         brigada = next((b for b in divisao.subordinados if b.nome == brigada_nome), None)
@@ -161,7 +161,7 @@ def processar_hierarquia(df_ativas, cidades_df):
                 brigada.lat, brigada.lon = divisao.lat, divisao.lon  # Caso contrário, herda da divisão
             
             divisao.adicionar_subordinado(brigada)
-            print(f"[DEBUGB] Brigada '{brigada.nome}' - Coordenadas finais atribuídas: ({brigada.lat}, {brigada.lon})")
+            #print(f"[DEBUGB] Brigada '{brigada.nome}' - Coordenadas finais atribuídas: ({brigada.lat}, {brigada.lon})")
 
 
 
@@ -209,7 +209,7 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
             subordinados = [sub.nome for sub in unidade.subordinados]
 
             # Cria o ponto KML para a unidade
-            print(f"[DEBUGA] Plotando unidade {unidade.nome} - Coordenadas: ({unidade.lat}, {unidade.lon})")
+            #print(f"[DEBUGA] Plotando unidade {unidade.nome} - Coordenadas: ({unidade.lat}, {unidade.lon})")
 
             ponto = folder.newpoint(
                 name=f"{unidade.nome} (ID: {unidade.id_unico})",
@@ -221,8 +221,6 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
                 f"Unidade: {unidade.nome}\n"
                 f"Nível: {unidade.nivel}\n"
                 f"ID: {unidade.id_unico}\n"
-                f"Latitude: {unidade.lat}\n"
-                f"Longitude: {unidade.lon}\n"
                 f"Unidades Superiores: {unidade_superior}\n"
             )
 
@@ -230,8 +228,9 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
                 description += "Unidades Subordinadas:\n" + "\n".join(subordinados) + "\n"
 
             if unidade.imagem:
-                description += f"<br><img src='{unidade.imagem}' alt='{unidade.nome}' width='200'/>"
-                ponto.style.iconstyle.icon.href = unidade.imagem
+                caminho_completo = f"military_sistem/{unidade.imagem}"  # Complementa o caminho
+                description += f"<br><img src='{caminho_completo}' alt='{unidade.nome}' width='200'/>"
+                ponto.style.iconstyle.icon.href = caminho_completo
                 ponto.style.iconstyle.scale = 1.0
 
             ponto.description = description
@@ -296,8 +295,8 @@ def gerar_coordenadas_todos_niveis(forcas, raio_inicial=0.01):
 
 
 # Carregar os DataFrames
-df_ativas = pd.read_excel('military_sistem/Data_Military_Units.ods', sheet_name='Ativas')
-cidades_df = pd.read_excel('citizen_generator/Filtered_Pop_Municipio.ods', sheet_name='Main')
+df_ativas = pd.read_excel('Main/military_sistem/Data_Military_Units.ods', sheet_name='Ativas')
+cidades_df = pd.read_excel('Main/citizen_generator/Filtered_Pop_Municipio.ods', sheet_name='Main')
 
 # Corrigir o formato das coordenadas no DataFrame de cidades
 cidades_df['Latitude'] = cidades_df['Latitude'].apply(lambda x: float(str(x).replace(',', '.')))
@@ -315,10 +314,10 @@ niveis = ["Exército", "Divisão", "Brigada", "Regimento"]
 # Gerar um único KML com camadas separadas por nível
 gerar_kml_com_camadas(forcas, niveis, output_file="unidades.kml")
 
-# Verificar as primeiras linhas de ambos os DataFrames
-print("[DEBUG] Primeiras linhas do DataFrame df_ativas:")
-print(df_ativas.head())
+# Verificar as primeiras linhas de ambos os
+#print("[DEBUG] Primeiras linhas do DataFrame df_ativas:")
+#print(df_ativas.head())
 
-print("[DEBUG] Primeiras linhas do DataFrame cidades_df:")
-print(cidades_df.head())
+#print("[DEBUG] Primeiras linhas do DataFrame cidades_df:")
+#print(cidades_df.head())
 # Teste direto da função buscar_coordenadas
