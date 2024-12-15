@@ -228,7 +228,7 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
                 description += "Unidades Subordinadas:\n" + "\n".join(subordinados) + "\n"
 
             if unidade.imagem:
-                caminho_completo = f"military_sistem/{unidade.imagem}"  # Complementa o caminho
+                caminho_completo = f"Main/military_sistem/{unidade.imagem}"  # Complementa o caminho
                 description += f"<br><img src='{caminho_completo}' alt='{unidade.nome}' width='200'/>"
                 ponto.style.iconstyle.icon.href = caminho_completo
                 ponto.style.iconstyle.scale = 1.0
