@@ -80,7 +80,10 @@ def gerar_coordenadas_circulo(base_coord, total, raio):
 # ==========================================
 # Function to process the hierarchy from DataFrames
 # ==========================================
-def processar_hierarquia(df_ativas, cidades_df):
+# ==========================================
+# Function to process the hierarchy from DataFrames
+# ==========================================
+def processar_hierarquia(df_ativas, cidades_df, unidades_df):
     """Processes DataFrames to build hierarchy using classes."""
     forcas = {}
 
@@ -93,6 +96,14 @@ def processar_hierarquia(df_ativas, cidades_df):
                     'lat': cidade_row.iloc[0]['Latitude'],
                     'lon': cidade_row.iloc[0]['Longitude']
                 }
+        return None
+
+    # Helper function to fetch regiment command role
+    def buscar_cargo_regimento(tipo_regimento):
+        """Fetches the command role for the given regiment type."""
+        row = unidades_df[unidades_df['Tipo'] == tipo_regimento]
+        if not row.empty:
+            return row.iloc[0]['Cargo_Quinta']  # Adjust the column name if necessary
         return None
 
     for _, row in df_ativas.iterrows():
@@ -150,7 +161,8 @@ def processar_hierarquia(df_ativas, cidades_df):
 
         # Add regiments
         for regimento_nome in regimentos:
-            regimento = Regimento(regimento_nome, id_unico=len(brigada.subordinados) + 1, imagem=reg_imagem)
+            cargo_comando = buscar_cargo_regimento(regimento_nome)
+            regimento = Regimento(regimento_nome, id_unico=len(brigada.subordinados) + 1, imagem=reg_imagem, cargo_comando=cargo_comando)
             regimento.lat, regimento.lon = brigada.lat, brigada.lon
             brigada.adicionar_subordinado(regimento)
 
@@ -239,13 +251,14 @@ def gerar_coordenadas_todos_niveis(forcas, raio_inicial=0.01):
 # ==========================================
 df_ativas = pd.read_excel('Main/military_sistem/Data_Military_Units.ods', sheet_name='Ativas')
 cidades_df = pd.read_excel('Main/citizen_generator/Filtered_Pop_Municipio.ods', sheet_name='Main')
+unidades_df = pd.read_excel('Main/military_sistem/Data_Military_Units.ods', sheet_name='Unidades')
 
 # Fix coordinate format in city DataFrame
 cidades_df['Latitude'] = cidades_df['Latitude'].apply(lambda x: float(str(x).replace(',', '.')))
 cidades_df['Longitude'] = cidades_df['Longitude'].apply(lambda x: float(str(x).replace(',', '.')))
 
 # Process the hierarchy and generate KML
-forcas = processar_hierarquia(df_ativas, cidades_df)
+forcas = processar_hierarquia(df_ativas, cidades_df, unidades_df)
 gerar_coordenadas_todos_niveis(forcas)
 
 # Specify levels for KML
