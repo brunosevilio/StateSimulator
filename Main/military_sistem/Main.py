@@ -168,12 +168,20 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
                 name=f"{unidade.nome} (ID: {unidade.id_unico})",
                 coords=[(unidade.lon, unidade.lat)]
             )
+            subordinados = [sub.nome for sub in unidade.subordinados]
+
             description = (
                 f"Unit: {unidade.nome}\n"
                 f"Level: {unidade.nivel}\n"
                 f"ID: {unidade.id_unico}\n"
                 f"Superior Units: {' > '.join(hierarquia_superior) if hierarquia_superior else 'None'}\n"
             )
+
+            if subordinados:
+                description += "Subordinate Units:\n" + "\n".join(subordinados) + "\n"
+            else:
+                description += "Subordinate Units: None\n"
+
             if unidade.imagem:
                 caminho_completo = f"Main/military_sistem/{unidade.imagem}"
                 description += f"<br><img src='{caminho_completo}' width='200'/>"
