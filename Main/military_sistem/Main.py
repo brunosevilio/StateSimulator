@@ -83,7 +83,8 @@ def gerar_coordenadas_circulo(base_coord, total, raio):
 # ==========================================
 # Function to process the hierarchy from DataFrames
 # ==========================================
-def processar_hierarquia(df_ativas, cidades_df, unidades_df):
+# Modifique a função 'processar_hierarquia' para incorporar a contagem de unidades
+def processar_hierarquia(df_ativas, cidades_df, unidades_df, df_unidades):
     """Processes DataFrames to build hierarchy using classes."""
     forcas = {}
 
@@ -105,6 +106,9 @@ def processar_hierarquia(df_ativas, cidades_df, unidades_df):
         if not row.empty:
             return row.iloc[0]['Cargo_Quinta']  # Adjust the column name if necessary
         return None
+
+    # Criar um dicionário de unidades totais no nível quinto
+    regimento_to_total_quinto = df_unidades.set_index("Tipo")["Regimento_Total_Unidades_Quinto"].to_dict()
 
     for _, row in df_ativas.iterrows():
         # Extract hierarchy levels
@@ -162,15 +166,57 @@ def processar_hierarquia(df_ativas, cidades_df, unidades_df):
         # Add regiments
         for regimento_nome in regimentos:
             cargo_comando = buscar_cargo_regimento(regimento_nome)
+            regimento_total = regimento_to_total_quinto.get(regimento_nome, 0)  # Fetch total units at level quinto
             regimento = Regimento(regimento_nome, id_unico=len(brigada.subordinados) + 1, imagem=reg_imagem, cargo_comando=cargo_comando)
             regimento.lat, regimento.lon = brigada.lat, brigada.lon
+            regimento.total_unidades = regimento_total  # Add total units to regimento object
             brigada.adicionar_subordinado(regimento)
+
+    # ** Propagar os totais hierarquicamente **
+    for forca in forcas.values():
+        for exercito in forca.subordinados:
+            for divisao in exercito.subordinados:
+                for brigada in divisao.subordinados:
+                    # Total de brigada é a soma de seus regimentos
+                    brigada.total_unidades = sum(getattr(reg, 'total_unidades', 0) for reg in brigada.subordinados)
+
+                # Total de divisão é a soma de suas brigadas
+                divisao.total_unidades = sum(getattr(brig, 'total_unidades', 0) for brig in divisao.subordinados)
+
+            # Total de exército é a soma de suas divisões
+            exercito.total_unidades = sum(getattr(div, 'total_unidades', 0) for div in exercito.subordinados)
+
+        # Total de força é a soma de seus exércitos
+        forca.total_unidades = sum(getattr(exercito, 'total_unidades', 0) for exercito in forca.subordinados)
 
     return forcas
 
-# ==========================================
-# Function to generate a KML file with hierarchical layers
-# ==========================================
+
+# Função para calcular o total de unidades no nível quinto
+# Função para calcular o total de unidades no nível quinto
+def calcular_total_nivel_quinto(row):
+    # Quantidade base
+    qtd_base = row["Qtd_Base"]
+    
+    # Multiplicadores até o nível quinto
+    multiplicador_segunda = row["Multiplicador_Segunda"]
+    multiplicador_terceira = row["Multiplicador_Terceira"]
+    multiplicador_quarta = row["Multiplicador_Quarta"]
+    multiplicador_quinta = row["Multiplicador_Quinta"]
+    
+    # Calcular o total de unidades no nível quinto
+    total_quinto = (qtd_base *
+                    multiplicador_segunda *
+                    multiplicador_terceira *
+                    multiplicador_quarta *
+                    multiplicador_quinta)
+    return total_quinto
+
+
+# Salvar o resultado em um novo arquivo (opcional)
+#unidades_df.to_excel("Unidades_Com_Totais_Quinto.xlsx", index=False)
+
+# Modifique a função 'gerar_kml_com_camadas' para incluir a contagem de unidades
 def gerar_kml_com_camadas(forcas, niveis, output_file):
     """Generates a single KML containing layers (folders) for each specified level."""
     kml = Kml()
@@ -186,17 +232,20 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
             )
             subordinados = [sub.nome for sub in unidade.subordinados]
 
+            total_unidades = getattr(unidade, 'total_unidades', 'N/A')  # Fetch total units if available
+
             description = (
                 f"<b>Unit:</b> {unidade.nome}<br>"
                 f"<b>ID:</b> {unidade.id_unico}<br>"
                 f"<b>Comandante:</b> {unidade.cargo_comando if unidade.cargo_comando else 'None'}<br>"
                 f"<b>Superior Units:</b><br>{' > '.join(hierarquia_superior) if hierarquia_superior else 'None'}<br>"
+                f"<b>Total Units:</b> {total_unidades}<br>"
             )
 
             if subordinados:
                 description += "<b>Subordinate Units:</b><br>" + "<br>".join(subordinados) + "<br>"
             else:
-                description += "<b>Subordinate Units:</b> Batalhão<br>"
+                description += "<b>Subordinate Units:</b> None<br>"
 
             if unidade.imagem:
                 caminho_completo = f"Main/military_sistem/{unidade.imagem}"
@@ -216,6 +265,8 @@ def gerar_kml_com_camadas(forcas, niveis, output_file):
 
     kml.save(output_file)
     print(f"KML '{output_file}' generated with specified levels.")
+
+
 
 # ==========================================
 # Function to generate coordinates for all hierarchical levels
@@ -253,12 +304,19 @@ df_ativas = pd.read_excel('Main/military_sistem/Data_Military_Units.ods', sheet_
 cidades_df = pd.read_excel('Main/citizen_generator/Filtered_Pop_Municipio.ods', sheet_name='Main')
 unidades_df = pd.read_excel('Main/military_sistem/Data_Military_Units.ods', sheet_name='Unidades')
 
+# Substitua `df` por `unidades_df`
+unidades_df["Regimento_Total_Unidades_Quinto"] = unidades_df.apply(calcular_total_nivel_quinto, axis=1)
+
+# Exibir o DataFrame atualizado com a nova coluna
+print(unidades_df[["Tipo", "Regimento_Total_Unidades_Quinto"]])
+
 # Fix coordinate format in city DataFrame
 cidades_df['Latitude'] = cidades_df['Latitude'].apply(lambda x: float(str(x).replace(',', '.')))
 cidades_df['Longitude'] = cidades_df['Longitude'].apply(lambda x: float(str(x).replace(',', '.')))
 
 # Process the hierarchy and generate KML
-forcas = processar_hierarquia(df_ativas, cidades_df, unidades_df)
+# Passando o DataFrame `unidades_df` como argumento adicional
+forcas = processar_hierarquia(df_ativas, cidades_df, unidades_df, unidades_df)
 gerar_coordenadas_todos_niveis(forcas)
 
 # Specify levels for KML
